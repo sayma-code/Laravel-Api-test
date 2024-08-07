@@ -4,13 +4,14 @@ namespace App\Http\Controllers\API\V1;
 
 use App\Filters\V1\CustomersFilter;
 use App\Models\Customer;
-use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\V1\StoreCustomerRequest as V1StoreCustomerRequest;
+use App\Http\Requests\V1\UpdateCustomerRequest as V1UpdateCustomerRequest;
 use App\Http\Resources\V1\CustomerCollection;
 use App\Http\Resources\V1\CustomerResource;
+use Database\Factories\CustomerFactory;
 use Illuminate\Http\Request;
-
 class CustomerController extends Controller
 {
     /**
@@ -33,19 +34,11 @@ class CustomerController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCustomerRequest $request)
+    public function store(V1StoreCustomerRequest $request)
     {
-        //
+        return new CustomerResource(Customer::create($request->all()));
     }
 
     /**
@@ -53,23 +46,21 @@ class CustomerController extends Controller
      */
     public function show(Customer $customer)
     {
-        return new CustomerResource($customer);
-    }
+        $includeInvoices = request()->query('includeInvoices');
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Customer $customer)
-    {
-        //
+        if($includeInvoices){
+            return new CustomerResource($customer->loadMissing('invoices'));
+        }
+
+        return new CustomerResource($customer);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCustomerRequest $request, Customer $customer)
+    public function update(V1UpdateCustomerRequest $request, Customer $customer)
     {
-        //
+        $customer->update($request->all());
     }
 
     /**
